@@ -14,7 +14,23 @@ const token = [
   true ,true ,true ,true ,true ,true ,true ,true ,
   true ,true ,true ,true ,true ,true ,true ,true ,
   true ,true ,true ,true ,true ,true ,true ,true ,
-  true ,true ,true ,false,true ,false,true ,false
+  true ,true ,true ,false,true ,false,true ,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false,
+  false,false,false,false,false,false,false,false
 ]
 
 type
@@ -187,14 +203,15 @@ proc mp_req*[T](req: ptr char,
         # nil check
         if uchar == '\0':
           return -1
-        # space check
-        elif uchar == '\32':
-          return -1
         # non printable check
         elif (uchar < '\40') and not(uchar == '\11') or uchar == '\177':
           # if CR, header line will end
           if uchar == '\13':
             break
+          if uchar == '\32':
+            buf += 1
+          if uchar == '\37':
+            buf += 1
         else:
           buf += 1
 
@@ -210,18 +227,18 @@ when isMainModule:
   import times
   # GET /test HTTP/1.1\r\L\r\L
   var 
-    test = [
-      'G', 'E', 'T', ' ', 
-      '/', 'f', 'o', 'o', ' ',
-      'H', 'T', 'T', 'P', '/', '1', '.', '1', 
-      '\r', '\L',
-      'H', 'o', 's', 't', ':', ' ',
-      't', 'e', 's', 't',
-      '\r', '\L',
-      'C', 'o', 'n', 't', 'e', 'n', 't', '-', 'T', 'y', 'p', 'e', ':', ' ',
-      't', 'e', 'x', 't', '/', 'h', 't', 'm', 'l', 
-      '\r', '\L', '\r', '\L'
-    ]
+    test = """GET / HTTP/1.1
+Host: example.com
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1
+Upgrade-Insecure-Requests: 1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+DNT: 1
+Accept-Encoding: gzip, deflate, br
+Accept-Language: ja,en-US;q=0.9,en;q=0.8
+Cookie: wp-settings-1=foo%bar; wp-settings-time-1=123456789
+
+"""
     # reqMethod, reqPath, minorVersion
     rm, rp, mnv: ptr char
 
@@ -243,10 +260,11 @@ when isMainModule:
 
   if mp_req(test[0].addr, rm, rml, rp, rpl, mnv, hdaddr, hdl) == 0:
     print($rm, rml) # GET
-    print($rp, rpl) # /test
+    print($rp, rpl) # /
     print($mnv, 0)  # 1
     for i in 0 .. hdl - 1:
-      print($(hd[i].name), hd[i].namelen)   # Host, Content-Type
-      print($(hd[i].value), hd[i].valuelen) # test, text/html
+      # header
+      print($(hd[i].name), hd[i].namelen)
+      print($(hd[i].value), hd[i].valuelen)
   else:
     echo "invalid request."
