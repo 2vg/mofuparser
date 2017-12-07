@@ -37,10 +37,12 @@ proc mp_req*[T](req: ptr char,
   reqMethodLen = 0
   reqPathLen   = 0
   headerLen    = 0
-  var hd  = headers.new()
   
   # address of first char of request char[]
   var buf = cast[int](req)
+  
+  # need headers object into array
+  var hdlen = 0
 
   # METHOD check
   var start = buf
@@ -148,6 +150,8 @@ proc mp_req*[T](req: ptr char,
         break
     # non space and non tab check
     elif not(uchar == '\32') and not(uchar == '\9'):
+      # headers object
+      var hd  = headers.new()
       # HEADER key check
       start = buf
       hd.name = cast[ptr char](start)
@@ -195,10 +199,10 @@ proc mp_req*[T](req: ptr char,
           buf += 1
 
       hd.valuelen = buf - start - 1
-      # first loop is no count
-      header[i - 1] = hd
-      headerLen += 1
+      header[hdlen] = hd
+      hdlen += 1
 
+  headerLen = hdlen
   return 0
 
 # test
@@ -210,36 +214,39 @@ when isMainModule:
       'G', 'E', 'T', ' ', 
       '/', 'f', 'o', 'o', ' ',
       'H', 'T', 'T', 'P', '/', '1', '.', '1', 
-      '\r', '\L',# '\r', '\L'
+      '\r', '\L',
       'H', 'o', 's', 't', ':', ' ',
       't', 'e', 's', 't',
+      '\r', '\L',
+      'C', 'o', 'n', 't', 'e', 'n', 't', '-', 'T', 'y', 'p', 'e', ':', ' ',
+      't', 'e', 'x', 't', '/', 'h', 't', 'm', 'l', 
       '\r', '\L', '\r', '\L'
     ]
     # reqMethod, reqPath, minorVersion
     rm, rp, mnv: ptr char
-  
+
     # reqMethodLength, reqPathLength, header length
     rml, rpl, hdl: int
-  
+
     # headers
     hd     : array[64, headers]
     hdaddr = hd.addr
-  
+
   # for benchmark (?) lol
   echo epochTime()
   for i in 0 .. 100000:
     discard mp_req(test[0].addr, rm, rml, rp, rpl, mnv, hdaddr, hdl)
   echo epochTime()
-  
+
   proc print(value: string, length: int) =
     echo value[0 .. length]
-  
+
   if mp_req(test[0].addr, rm, rml, rp, rpl, mnv, hdaddr, hdl) == 0:
     print($rm, rml) # GET
     print($rp, rpl) # /test
     print($mnv, 0)  # 1
     for i in 0 .. hdl - 1:
-      print($(hd[i].name), hd[i].namelen)   # Host
-      print($(hd[i].value), hd[i].valuelen) # test
+      print($(hd[i].name), hd[i].namelen)   # Host, Content-Type
+      print($(hd[i].value), hd[i].valuelen) # test, text/html
   else:
     echo "invalid request."
