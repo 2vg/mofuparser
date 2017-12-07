@@ -1,7 +1,7 @@
 # mofuparser
 > hyper minimal ultra fast http parser.
 ### why fast ?
-this parser is This parser is a nim implementation of something like [picohttpparser](https://github.com/h2o/picohttpparser)
+this parser is a nim implementation of something like [picohttpparser](https://github.com/h2o/picohttpparser)
 
 so, what this parser does is simply return the pointer and length of what you need from the passed in request char[]
 
@@ -47,9 +47,12 @@ var
     'G', 'E', 'T', ' ', 
     '/', 'f', 'o', 'o', ' ',
     'H', 'T', 'T', 'P', '/', '1', '.', '1', 
-    '\r', '\L',# '\r', '\L'
+    '\r', '\L',
     'H', 'o', 's', 't', ':', ' ',
     't', 'e', 's', 't',
+    '\r', '\L',
+    'C', 'o', 'n', 't', 'e', 'n', 't', '-', 'T', 'y', 'p', 'e', ':', ' ',
+    't', 'e', 'x', 't', '/', 'h', 't', 'm', 'l', 
     '\r', '\L', '\r', '\L'
   ]
   # reqMethod, reqPath, minorVersion
@@ -76,8 +79,8 @@ if mp_req(test[0].addr, rm, rml, rp, rpl, mnv, hdaddr, hdl) == 0:
   print($rp, rpl) # /test
   print($mnv, 0)  # 1
   for i in 0 .. hdl - 1:
-    print($(hd[i].name), hd[i].namelen)   # Host
-    print($(hd[i].value), hd[i].valuelen) # test
+    print($(hd[i].name), hd[i].namelen)   # Host, Content-Type
+    print($(hd[i].value), hd[i].valuelen) # test, text/html
 else:
   echo "invalid request."
 ```
