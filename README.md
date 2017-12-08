@@ -44,18 +44,7 @@ import mofuparser, times
 
 # GET /test HTTP/1.1\r\L\r\L
 var 
-  test = """GET / HTTP/1.1
-Host: example.com
-Connection: keep-alive
-User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1
-Upgrade-Insecure-Requests: 1
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
-DNT: 1
-Accept-Encoding: gzip, deflate, br
-Accept-Language: ja,en-US;q=0.9,en;q=0.8
-Cookie: wp-settings-1=foo%bar; wp-settings-time-1=123456789
-
-"""
+  test = "GET /test HTTP/1.1\r\LHost: 127.0.0.1:8080\r\LConnection: keep-alive\r\LCache-Control: max-age=0\r\LAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\LUser-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.56 Safari/537.17\r\LAccept-Encoding: gzip,deflate,sdch\r\LAccept-Language: en-US,en;q=0.8\r\LAccept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3\r\LCookie: name=mofuparser\r\L\r\L"
   # reqMethod, reqPath, minorVersion
   rm, rp, mnv: ptr char
 
@@ -67,10 +56,10 @@ Cookie: wp-settings-1=foo%bar; wp-settings-time-1=123456789
   hdaddr = hd.addr
 
 # for benchmark (?) lol
-echo epochTime()
+var old = epochTime()
 for i in 0 .. 100000:
   discard mp_req(test[0].addr, rm, rml, rp, rpl, mnv, hdaddr, hdl)
-echo epochTime()
+echo epochTime() - old
 
 proc print(value: string, length: int) =
   echo value[0 .. length]
