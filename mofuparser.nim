@@ -214,7 +214,7 @@ proc mp_req*[T](req: ptr char,
           elif uchar == '\10':
             break
           else:
-            buf += 1
+            return -1
         else:
           buf += 1
 
