@@ -35,6 +35,7 @@ Please look at how to usage at the bottom
 - [x] ~~all method support~~
 - [ ] multibyte support
 - [ ] multiline support
+- [ ] make something like httpobject(?) to make quantity of more less cords
 - [ ] more bad request parse
 ### test
 `nim c -r mofuparser`
