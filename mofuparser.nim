@@ -34,25 +34,29 @@ const token = [
 ]
 
 type
-  headers*   = object
-    name*    : ptr char
-    namelen* : int
-    value*   : ptr char
-    valuelen*: int
+  HttpReq*    = object
+    reqmethod*    : ptr char
+    reqmethodLen* : int
+    path*         : ptr char
+    pathLen*      : int
+    minor*        : ptr char
+    headerLen*    : int
 
-proc mp_req*[T](req: ptr char,
-                reqMethod: var ptr char, reqMethodLen: var int,
-                reqPath: var ptr char, reqPathLen: var int,
-                minorVersion: var ptr char,
-                header: var ptr T, headerLen: var int): int =
+  headers*     = object
+    name*        : ptr char
+    nameLen*     : int
+    value*       : ptr char
+    valueLen*    : int
+
+proc mp_req*[T](req: ptr char, httpreq: var HttpReq, header: var ptr T): int =
 
   # argment initialization
-  reqMethod    = nil
-  reqPath      = nil
-  minorVersion = nil
-  reqMethodLen = 0
-  reqPathLen   = 0
-  headerLen    = 0
+  httpreq.reqmethod    = nil
+  httpreq.path      = nil
+  httpreq.minor = nil
+  httpreq.reqmethodLen = 0
+  httpreq.pathLen   = 0
+  httpreq.headerLen    = 0
   
   # address of first char of request char[]
   var buf = cast[int](req)
@@ -77,8 +81,8 @@ proc mp_req*[T](req: ptr char,
     else:
       buf += 1
 
-  reqMethod = cast[ptr char](start)
-  reqMethodLen = buf - start - 2
+  httpreq.reqmethod = cast[ptr char](start)
+  httpreq.reqmethodLen = buf - start - 2
 
   # PATH check
   start = buf
@@ -97,8 +101,8 @@ proc mp_req*[T](req: ptr char,
     else:
       buf += 1
 
-  reqPath = cast[ptr char](start)
-  reqPathLen = buf - start - 1
+  httpreq.path = cast[ptr char](start)
+  httpreq.pathLen = buf - start - 1
 
   # HTTP Version check
   # 'H' check
@@ -138,7 +142,7 @@ proc mp_req*[T](req: ptr char,
 
   # numeric check
   if 47 < cast[ptr char](buf)[].int or cast[ptr char](buf)[].int < 58:
-    minorVersion = cast[ptr char](buf)
+    httpreq.minor = cast[ptr char](buf)
   else:
     return -1
 
@@ -185,10 +189,10 @@ proc mp_req*[T](req: ptr char,
           return -1
         # colon check
         elif uchar == '\58':
-          header[hdlen].namelen = buf - start - 1
+          header[hdlen].nameLen = buf - start - 1
           buf += 1
           if cast[ptr char](buf)[] == '\32':
-            header[hdlen].namelen = buf - start - 2
+            header[hdlen].nameLen = buf - start - 2
             buf += 1
           break
         # token check
@@ -218,42 +222,37 @@ proc mp_req*[T](req: ptr char,
         else:
           buf += 1
 
-      header[hdlen].valuelen = buf - start - 1
+      header[hdlen].valueLen = buf - start - 1
       hdlen += 1
 
-  headerLen = hdlen
+  httpreq.headerLen = hdlen
   return 0
 
 # test
 when isMainModule:
   import times
-  # GET /test HTTP/1.1\r\L\r\L
+
   var 
     test = "GET /test HTTP/1.1\r\LHost: 127.0.0.1:8080\r\LConnection: keep-alive\r\LCache-Control: max-age=0\r\LAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\LUser-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.56 Safari/537.17\r\LAccept-Encoding: gzip,deflate,sdch\r\LAccept-Language: en-US,en;q=0.8\r\LAccept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3\r\LCookie: name=mofuparser\r\L\r\L"
-    # reqMethod, reqPath, minorVersion
-    rm, rp, mnv: ptr char
 
-    # reqMethodLength, reqPathLength, header length
-    rml, rpl, hdl: int
-
-    # headers
-    hd     : array[64, headers]
+    htreq: HttpReq
+    hd : array[64, headers]
     hdaddr = hd.addr
 
   # for benchmark (?) lol
   var old = epochTime()
   for i in 0 .. 100000:
-    discard mp_req(test[0].addr, rm, rml, rp, rpl, mnv, hdaddr, hdl)
+    discard mp_req(test[0].addr, htreq, hdaddr)
   echo epochTime() - old
 
   proc print(value: string, length: int) =
     echo value[0 .. length]
 
-  if mp_req(test[0].addr, rm, rml, rp, rpl, mnv, hdaddr, hdl) == 0:
-    print($rm, rml) # GET
-    print($rp, rpl) # /
-    print($mnv, 0)  # 1
-    for i in 0 .. hdl - 1:
+  if mp_req(test[0].addr, htreq, hdaddr) == 0:
+    print($htreq.reqmethod, htreq.reqmethodLen)
+    print($htreq.path, htreq.pathLen)
+    print($htreq.minor, 0)
+    for i in 0 .. htreq.headerLen - 1:
       # header
       print($(hd[i].name), hd[i].namelen)
       print($(hd[i].value), hd[i].valuelen)
