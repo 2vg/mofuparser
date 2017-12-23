@@ -226,7 +226,7 @@ proc mp_req*[T](req: ptr char, httpreq: var HttpReq, header: var ptr T): int =
       hdlen += 1
 
   httpreq.headerLen = hdlen
-  return 0
+  return buf + 1 - cast[int](req)
 
 # test
 when isMainModule:
@@ -248,7 +248,7 @@ when isMainModule:
   proc print(value: string, length: int) =
     echo value[0 .. length]
 
-  if mp_req(test[0].addr, htreq, hdaddr) == 0:
+  if mp_req(test[0].addr, htreq, hdaddr) > 0:
     print($htreq.reqmethod, htreq.reqmethodLen)
     print($htreq.path, htreq.pathLen)
     print($htreq.minor, 0)
@@ -256,5 +256,8 @@ when isMainModule:
       # header
       print($(hd[i].name), hd[i].namelen)
       print($(hd[i].value), hd[i].valuelen)
+    echo mp_req(test[0].addr, htreq, hdaddr)
+    echo test[mp_req(test[0].addr, htreq, hdaddr) - 5]
+    echo test[mp_req(test[0].addr, htreq, hdaddr) - 5].int
   else:
     echo "invalid request."
