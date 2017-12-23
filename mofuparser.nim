@@ -35,8 +35,8 @@ const token = [
 
 type
   HttpReq*    = object
-    reqmethod*    : ptr char
-    reqmethodLen* : int
+    `method`*    : ptr char
+    methodLen* : int
     path*         : ptr char
     pathLen*      : int
     minor*        : ptr char
@@ -51,10 +51,10 @@ type
 proc mp_req*[T](req: ptr char, httpreq: var HttpReq, header: var ptr T): int =
 
   # argment initialization
-  httpreq.reqmethod    = nil
+  httpreq.method    = nil
   httpreq.path      = nil
   httpreq.minor = nil
-  httpreq.reqmethodLen = 0
+  httpreq.methodLen = 0
   httpreq.pathLen   = 0
   httpreq.headerLen    = 0
   
@@ -81,8 +81,8 @@ proc mp_req*[T](req: ptr char, httpreq: var HttpReq, header: var ptr T): int =
     else:
       buf += 1
 
-  httpreq.reqmethod = cast[ptr char](start)
-  httpreq.reqmethodLen = buf - start - 2
+  httpreq.method = cast[ptr char](start)
+  httpreq.methodLen = buf - start - 2
 
   # PATH check
   start = buf
@@ -249,7 +249,7 @@ when isMainModule:
     echo value[0 .. length]
 
   if mp_req(test[0].addr, htreq, hdaddr) > 0:
-    print($htreq.reqmethod, htreq.reqmethodLen)
+    print($htreq.method, htreq.methodLen)
     print($htreq.path, htreq.pathLen)
     print($htreq.minor, 0)
     for i in 0 .. htreq.headerLen - 1:
