@@ -1,3 +1,7 @@
+# mofuparser
+# Copyright 2vg
+# mofuparser is hyper minimal ultra fast http parser.
+
 import httpcore
 
 const token = [

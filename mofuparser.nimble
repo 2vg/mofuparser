@@ -1,6 +1,11 @@
 # Package
-name          = "mofuparser"
+
 version       = "0.1.0"
-author        = "momf"
-description   = "Hyper minimal http parser."
+author        = "2vg"
+description   = "mofuparser is hyper minimal ultra fast http parser."
 license       = "MIT"
+srcDir        = "src"
+
+# Dependencies
+
+requires "nim >= 0.18.0"
