@@ -21,7 +21,7 @@ it is possible to change the length of the array at compile time, and specify it
 `-d:headerSize:128`
 
 ### argument
-- `mpParseRquest(req: ptr char, mhr: MPHTTPReq): int`
+- `mpParseRquest(req: string, mhr: MPHTTPReq): int`
 
 parse http request from client.
 
