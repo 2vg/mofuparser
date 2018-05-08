@@ -88,7 +88,7 @@ proc mpParseRequest*(req: string, mhr: MPHTTPReq): int =
   mhr.headerLen = 0
   
   # address of first char of request char[]
-  var buf = cast[int](req[0])
+  var buf = cast[int](unsafeAddr req[0])
   
   # need headers object into array
   var hdlen = 0
@@ -269,10 +269,10 @@ when isMainModule:
   # for benchmark (?) lol
   let old = cpuTime()
   for i in 0 .. 100000:
-    discard mpParseRequest(test[0].addr, mpr)
+    discard mpParseRequest(test, mpr)
   echo cpuTime() - old
 
-  if mpParseRequest(test[0].addr, mpr) > 0:
+  if mpParseRequest(test, mpr) > 0:
     echo mpr.getMethod
     echo mpr.getPath
     echo ($(mpr.minor))[0]
