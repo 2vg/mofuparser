@@ -77,7 +77,7 @@ proc toHttpHeaders*(mhr: MPHTTPReq): HttpHeaders =
 
   return hds.newHttpHeaders
 
-proc mpParseRequest*(req: ptr char, mhr: MPHTTPReq): int =
+proc mpParseRequest*(req: string, mhr: MPHTTPReq): int =
 
   # argment initialization
   mhr.httpMethod = nil
@@ -88,7 +88,7 @@ proc mpParseRequest*(req: ptr char, mhr: MPHTTPReq): int =
   mhr.headerLen = 0
   
   # address of first char of request char[]
-  var buf = cast[int](req)
+  var buf = cast[int](req[0])
   
   # need headers object into array
   var hdlen = 0
