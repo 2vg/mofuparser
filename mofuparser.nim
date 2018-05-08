@@ -1,3 +1,5 @@
+import httpcore
+
 const token = [
   false,false,false,false,false,false,false,false,
   false,false,false,false,false,false,false,false,
@@ -62,6 +64,14 @@ iterator headersPair*(req: MPHTTPReq): tuple[name, value: string] =
   for i in 0 ..< req.headerLen:
     yield (($(req.headers[i].name))[0 .. req.headers[i].namelen],
            ($(req.headers[i].value))[0 .. req.headers[i].valuelen])
+
+proc toHttpHeaders*(mhr: MPHTTPReq): HttpHeaders =
+  var hds: seq[tuple[key: string, val: string]] = @[]
+
+  for hd in mhr.headersPair:
+    hds.add((hd.name, hd.value))
+
+  return hds.newHttpHeaders
 
 proc mpParseRequest*(req: ptr char, mhr: MPHTTPReq): int =
 
