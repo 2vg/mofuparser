@@ -269,10 +269,10 @@ when isMainModule:
   # for benchmark (?) lol
   let old = cpuTime()
   for i in 0 .. 100000:
-    discard mpParseRequest(test, mpr)
+    discard mpParseRequest(addr test[0], mpr)
   echo cpuTime() - old
 
-  if mpParseRequest(test, mpr) > 0:
+  if mpParseRequest(addr test[0], mpr) > 0:
     echo mpr.getMethod
     echo mpr.getPath
     echo ($(mpr.minor))[0]
