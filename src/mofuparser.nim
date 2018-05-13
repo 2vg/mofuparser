@@ -77,7 +77,7 @@ proc toHttpHeaders*(mhr: MPHTTPReq): HttpHeaders =
 
   return hds.newHttpHeaders
 
-proc mpParseRequest*(req: ptr cha, mhr: MPHTTPReq): int =
+proc mpParseRequest*(req: ptr char, mhr: MPHTTPReq): int =
 
   # argment initialization
   mhr.httpMethod = nil
