@@ -47,9 +47,21 @@ type
     httpMethodLen*, pathLen*, headerLen*: int
     headers*: array[headerSize, headers]
 
-  headers*     = object
+  headers* = object
     name*, value: ptr char
     nameLen*, valueLen*: int
+
+  MPChunk* = ref object
+    state: ChunkState
+    byteLeftChunk, hexCount, consume: int
+
+  ChunkState = enum
+    size,
+    ext,
+    data,
+    crlf,
+    head,
+    middle
 
 proc getMethod*(req: MPHTTPReq): string {.inline.} =
   result = ($(req.httpMethod))[0 .. req.httpMethodLen]
@@ -178,7 +190,7 @@ proc mpParseRequest*(req: ptr char, mhr: MPHTTPReq): int =
   buf += 1
 
   # HEADER check
-  for i in 0 ..< mhr.headers.len:
+  for i in 0 ..< headerSize:
     let uchar = cast[ptr char](buf)[]
     # nil check
     if uchar == '\0':
@@ -256,6 +268,132 @@ proc mpParseRequest*(req: ptr char, mhr: MPHTTPReq): int =
 
   mhr.headerLen = hdlen
   return buf - cast[int](req) + 1
+
+template `+`[T](p: ptr T, off: int): ptr T =
+    cast[ptr type(p[])](cast[ByteAddress](p) +% off * sizeof(p[]))
+
+template `+=`[T](p: ptr T, off: int) =
+  p = p + off
+
+template `-`[T](p: ptr T, off: int): ptr T =
+  cast[ptr type(p[])](cast[ByteAddress](p) -% off * sizeof(p[]))
+
+template `-=`[T](p: ptr T, off: int) =
+  p = p - off
+
+template `[]`[T](p: ptr T, off: int): T =
+  (p + off)[]
+
+template `[]=`[T](p: ptr T, off: int, val: T) =
+  (p + off)[] = val
+
+template decodeHex(ch: char): int =
+  case ch
+  of '0'..'9':
+    ch.int - '0'.int
+  of 'A'..'F':
+    ch.int - 'A'.int + '\xa'.int
+  of 'a'..'f':
+    ch.int - 'a'.int + '\xa'.int
+  else: -1
+
+proc mpParseChunk*(mc: MPChunk, buf: ptr char, bSize: var int): int =
+  var dest, src: int
+  var bufSize = bSize
+  var ret = -2
+
+  template complete =
+    ret = bufSize - src
+
+  template chunkExit =
+    if dest != src: moveMem(buf + dest, buf + src, bufSize - src)
+    bSize = dest
+    return ret
+
+  while true:
+    case mc.state
+    of ChunkState.size:
+      while true:
+        var v: int
+        if src == bufSize: chunkExit()
+
+        if (v = decodeHex(buf[src]); v) == -1:
+          if mc.hexCount == 0:
+            ret = -1
+            chunkExit()
+          break
+
+        if mc.hexCount == int.sizeof * 2:
+          ret = -1
+          chunkExit()
+
+        mc.byteLeftChunk = mc.byteLeftChunk * 16 + v
+        mc.hexCount.inc()
+        src.inc()
+
+      mc.hexCount = 0
+      mc.state = ChunkState.ext
+
+    of ChunkState.ext:
+      while true:
+        if src == bufSize: chunkExit()
+        if buf[src] == '\10': break
+        src.inc()
+      src.inc()
+      if mc.byteLeftChunk == 0:
+        if mc.consume != 0: mc.state = ChunkState.head; break
+        else: complete()
+      mc.state = ChunkState.data
+
+    of ChunkState.data:
+      var avail = bufSize - src
+
+      if avail < mc.byteLeftChunk:
+        if dest != src: moveMem(buf + dest, buf + src, avail)
+        src += avail
+        dest += avail
+        mc.byteLeftChunk -= avail
+        chunkExit()
+
+      if dest != src: moveMem(buf + dest, buf + src, mc.byteLeftChunk)
+
+      src += mc.byteLeftChunk
+      dest += mc.byteLeftChunk
+      mc.byteLeftChunk = 0
+      mc.state = ChunkState.crlf
+
+    of ChunkState.crlf:
+      while true:
+        if src == bufSize: chunkExit()
+        if buf[src] != '\13': break
+        src.inc()
+
+      if buf[src] != '\10': ret = -1; chunkExit()
+      src.inc()
+      mc.state = ChunkState.size
+
+    of ChunkState.head:
+      while true:
+        if src == bufSize: chunkExit()
+        if buf[src] != '\13': break
+        src.inc()
+
+      if buf[src+1] != '\10': complete()
+
+      mc.state = ChunkState.middle
+
+    of ChunkState.middle:
+      while true:
+        if src == bufSize: chunkExit()
+        if buf[src] != '\10': break
+        src.inc()
+
+      src.inc()
+      mc.state = ChunkState.head
+    else: assert(false, "error")
+
+  complete()
+  chunkExit()
 
 # test
 when isMainModule:
