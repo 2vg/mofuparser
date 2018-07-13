@@ -293,7 +293,7 @@ proc mpParseRequest*(mhr: MPHTTPReq, req: ptr char, reqLen: int): int =
     buf += 1
 
   mhr.httpMethod = start
-  mhr.httpMethodLen = buf - start - 1
+  mhr.httpMethodLen = buf - start - 2
 
   # PATH CHECK
   start = buf
@@ -310,7 +310,7 @@ proc mpParseRequest*(mhr: MPHTTPReq, req: ptr char, reqLen: int): int =
     buf += 1
 
   mhr.path = start
-  mhr.pathLen = buf - start - 1
+  mhr.pathLen = buf - start - 2
 
   # VERSION CHECK
   bufLen = bufLen - (buf - req)
