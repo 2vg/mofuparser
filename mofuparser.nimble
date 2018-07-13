@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.2.2"
+version       = "0.3.0"
 author        = "2vg"
 description   = "mofuparser is hyper minimal ultra fast http parser."
 license       = "MIT"
