@@ -2,7 +2,7 @@ import macros, bitops, httpcore
 
 macro getCPU: untyped =
   let CPU = staticExec(
-    "nim c -r --hints:off --verbosity:0 SIMD/getCPU")
+    "nim c -r --hints:off --verbosity:0 private/SIMD/getCPU")
 
   if CPU == "SSE41\n" or CPU == "SSE41\n":
     return quote do:
