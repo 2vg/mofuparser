@@ -5,14 +5,18 @@ this parser is a nim implementation of something like [picohttpparser](https://g
 
 so, what this parser does is simply return the pointer and length of what you need from the passed in request char[].
 
-but not support SIMD yet.
+~~but not support SIMD yet.~~
+
+new version using SIMD 🚀.
+
+1.5 time faster !!!
 
 Please look at how to usage at the bottom.
 
 ### Feature
 - [x] HTTP request parse
 - [ ] HTTP response parse
-- [ ] HTTP chunk decord
+- [x] HTTP chunk decord
 
 and, mofuparser internally stores information about headers in an array of length 64.
 
@@ -38,9 +42,9 @@ the request body can be obtained with the returned length.
 ### Todo
 - [ ] http request body parse
 - [ ] http response parse support
-- [ ] http chunk decord support
+- [x] http chunk decord support
 - [ ] http/2.0 support
-- [x] ~~all method support~~
+- [x] all method support
 - [ ] multibyte support
 - [ ] multiline support
 - [x] make something like httpobject(?) to make quantity of more less cords
