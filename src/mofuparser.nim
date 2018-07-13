@@ -85,17 +85,17 @@ macro getCPU: untyped =
         let res = 0xffff_0000 or movemask_epi8(rev)
         return countTrailingZeroBits(res)
       proc urlVector(buf: var ptr char, bufLen: var int) =
-        while bufLen >= 16:
+        while bufLen >= 32:
           let ret = fastURLMatch(buf)
           buf += ret
           bufLen -= ret
-          if ret != 16: break
+          if ret != 32: break
       proc headerVector(buf: var ptr char, bufLen: var int) =
-        while bufLen >= 16:
+        while bufLen >= 32:
           let ret = fastHeaderMatch(buf)
           buf += ret
           bufLen -= ret
-          if ret != 16: break
+          if ret != 32: break
   else:
     return quote do:
       proc urlVector(buf: var ptr char, bufLen: var int) =
