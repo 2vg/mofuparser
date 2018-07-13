@@ -4,9 +4,9 @@ macro getCPU: untyped =
   let CPU = staticExec(
     "nim c -r --hints:off --verbosity:0 SIMD/getCPU")
 
-  if CPU == "SSE41\n":
+  if CPU == "SSE41\n" or CPU == "SSE41\n":
     return quote do:
-      import SIMD/[x86_sse2, x86_sse3, x86_ssse3]
+      import private/SIMD/[x86_sse2, x86_sse3, x86_ssse3]
       proc fastURLMatch(buf: ptr char): int =
         let LSH = set1_epi8(0x0F'i8)
         let URI = setr_epi8(
@@ -48,9 +48,9 @@ macro getCPU: untyped =
           buf += ret
           bufLen -= ret
           if ret != 16: break
-  elif CPU == "AVX2\n":
+  elif CPU == "AVX2\n" or CPU == "AVX2":
     return quote do:
-      import SIMD/[x86_sse2, x86_sse3, x86_ssse3]
+      import private/SIMD/[x86_avx, x86_avx2, x86_ssse3]
       proc fastURLMatch(buf: ptr char): int =
         let LSH = set1_epi8(0x0F'i8)
         let URI = setr_epi8(
