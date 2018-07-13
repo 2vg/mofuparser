@@ -4,7 +4,7 @@ macro getCPU: untyped =
   let CPU = staticExec(
     "nim c -r --hints:off --verbosity:0 private/SIMD/getCPU")
 
-  if CPU == "SSE41\n" or CPU == "SSE41\n":
+  if CPU == "SSE41\n" or CPU == "SSE41":
     return quote do:
       import private/SIMD/[x86_sse2, x86_sse3, x86_ssse3]
       proc fastURLMatch(buf: ptr char): int =
