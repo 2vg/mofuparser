@@ -256,9 +256,7 @@ proc mpParseHeader(headers: var array[headerSize, MPHeader], buf: var ptr char, 
         # HEADER VALUE CHECK
         var bufLen = bufLen - (buf - bufStart)
         start = buf
-        echo "befor: ", bufLen
         headerVector(buf, bufLen)
-        echo "after: ", bufLen
         while true:
           if buf[] == '\r' or buf[] == '\l':
             break
@@ -304,7 +302,6 @@ proc mpParseRequest*(mhr: MPHTTPReq, req: ptr char, reqLen: int): int =
   # PATH CHECK
   start = buf
   bufLen = bufLen - (buf - req)
-  echo bufLen
   urlVector(buf, bufLen)
   while true:
     if buf[] == ' ':
@@ -348,7 +345,6 @@ proc mpParseRequest*(mhr: MPHTTPReq, req: ptr char, reqLen: int): int =
 
   # PARSE HEADER
   bufLen = bufLen - (buf - req)
-  echo bufLen
   let hdrLen = mhr.headers.mpParseHeader(buf, bufLen)
 
   if hdrLen != -1:
