@@ -317,9 +317,6 @@ proc mpParseRequest*(mhr: MPHTTPReq, req: ptr char, reqLen: int): int =
   mhr.pathLen = buf - start - 2
 
   # VERSION CHECK
-  bufLen = bufLen - (buf - req)
-  if bufLen <= 8: return -1
-
   if buf[] != 'H': return -1
   buf += 1
   if buf[] != 'T': return -1
