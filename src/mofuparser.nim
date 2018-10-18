@@ -356,9 +356,9 @@ template decodeHex(ch: char): int =
   of '0'..'9':
     ch.int - '0'.int
   of 'A'..'F':
-    ch.int - 'A'.int + '\xa'.int
+    ch.int - 'A'.int + '\x0a'.int
   of 'a'..'f':
-    ch.int - 'a'.int + '\xa'.int
+    ch.int - 'a'.int + '\x0a'.int
   else: -1
 
 proc mpParseChunk*(mc: MPChunk, buf: ptr char, bSize: var int): int =
