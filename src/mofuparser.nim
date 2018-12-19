@@ -454,7 +454,6 @@ proc mpParseChunk*(mc: MPChunk, buf: ptr char, bSize: var int): int =
 
       src.inc()
       mc.state = ChunkState.head
-    else: assert(false, "error")
 
   complete()
   chunkExit()
